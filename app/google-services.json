@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "171943364588",
+    "project_id": "email-password-auth-4b937",
+    "storage_bucket": "email-password-auth-4b937.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:171943364588:android:d2267357cea3c30571a2c9",
+        "android_client_info": {
+          "package_name": "com.example.foodhub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgq5v1DmChbbs2K70GF7XCHYFMx78RWi4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

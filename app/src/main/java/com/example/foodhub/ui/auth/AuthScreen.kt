@@ -38,6 +38,7 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
     var password by remember { mutableStateOf("") }
     var selectedRole by remember { mutableStateOf(UserRole.BOTH) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold { paddingValues ->
         Box(
@@ -184,7 +185,7 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                         OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
-                            label = { Text("ইমেইল বা ফোন নম্বর (Email/Phone)") },
+                            label = { Text("ইমেইল (Email)") },
                             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
@@ -258,53 +259,73 @@ fun AuthScreen(onAuthSuccess: () -> Unit) {
                         // Submit Button
                         Button(
                             onClick = {
-                                val result = if (isSignUp) {
+                                isLoading = true
+                                errorMessage = null
+                                val onResultHandler: (AuthResult) -> Unit = { result ->
+                                    isLoading = false
+                                    when (result) {
+                                        is AuthResult.Success -> {
+                                            errorMessage = null
+                                            onAuthSuccess()
+                                        }
+                                        is AuthResult.Error -> {
+                                            errorMessage = result.message
+                                        }
+                                    }
+                                }
+
+                                if (isSignUp) {
                                     FoodRepository.signup(
                                         name = name,
                                         email = email,
                                         password = password,
                                         phone = phone,
                                         address = address,
-                                        role = selectedRole
+                                        role = selectedRole,
+                                        onResult = onResultHandler
                                     )
                                 } else {
                                     FoodRepository.login(
                                         emailInput = email,
-                                        passwordInput = password
+                                        passwordInput = password,
+                                        onResult = onResultHandler
                                     )
                                 }
-
-                                when (result) {
-                                    is AuthResult.Success -> {
-                                        errorMessage = null
-                                        onAuthSuccess()
-                                    }
-                                    is AuthResult.Error -> {
-                                        errorMessage = result.message
-                                    }
-                                }
                             },
+                            enabled = !isLoading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
                         ) {
-                            Text(
-                                text = if (isSignUp) "রেজিস্টার করুন" else "লগইন করুন",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            if (isLoading) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    text = if (isSignUp) "রেজিস্টার করুন" else "লগইন করুন",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
 
                         // Demo Quick Login Button
                         OutlinedButton(
                             onClick = {
-                                val result = FoodRepository.loginAsDemo()
-                                if (result is AuthResult.Success) {
-                                    onAuthSuccess()
+                                isLoading = true
+                                FoodRepository.loginAsDemo { result ->
+                                    isLoading = false
+                                    if (result is AuthResult.Success) {
+                                        onAuthSuccess()
+                                    }
                                 }
                             },
+                            enabled = !isLoading,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
